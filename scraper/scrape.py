@@ -73,21 +73,22 @@ def scrape_county(page,county,idx):
             page.evaluate("__doPostBack('ctl00$ContentPlaceHolder1$as1$btnGo','')")
         page.wait_for_load_state("networkidle",timeout=20000)
         time.sleep(2)
+        page_num=1
         while True:
             html=page.content()
             urls=extract_detail_urls(html)
             for u in urls:
                 if u not in all_urls:
                     all_urls.append(u)
-            print("    ["+county+"] page has "+str(len(urls))+" notices, total so far: "+str(len(all_urls)))
-            next_links=page.locator("a[href*='Page$Next'], a:has-text('>')")
-            if next_links.count()==0:
+            print("    ["+county+"] page "+str(page_num)+" has "+str(len(urls))+" notices, total: "+str(len(all_urls)))
+            next_btn=page.locator("input[name*='btnNext']")
+            if next_btn.count()==0:
                 break
-            next_links.first.click()
+            next_btn.first.evaluate("el=>el.click()")
             page.wait_for_load_state("networkidle",timeout=15000)
             time.sleep(1.5)
-            new_html=page.content()
-            if new_html==html:
+            page_num+=1
+            if page_num>50:
                 break
     except Exception as e:
         print("    ["+county+"] ERROR: "+str(e))
