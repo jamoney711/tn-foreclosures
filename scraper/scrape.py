@@ -59,10 +59,12 @@ def extract_detail_urls(html):
 def scrape_county(page,county,idx):
     cb_name="ctl00$ContentPlaceHolder1$as1$lstCounty$"+str(idx)
     btn_name="ctl00$ContentPlaceHolder1$as1$btnGo"
-    all_urls=[]
+    all_records=[]
+    seen_urls=set()
     try:
         page.goto(BASE_URL+"/Search.aspx",wait_until="domcontentloaded",timeout=30000)
         page.wait_for_load_state("networkidle",timeout=15000)
+        page.evaluate("document.getElementById('ctl00_ContentPlaceHolder1_as1_rbLastNumDays').checked=true;document.getElementById('ctl00_ContentPlaceHolder1_as1_txtLastNumDays').value='7';")
         page.evaluate("__doPostBack('"+cb_name+"','')")
         page.wait_for_load_state("networkidle",timeout=20000)
         time.sleep(1)
@@ -77,10 +79,26 @@ def scrape_county(page,county,idx):
         while True:
             html=page.content()
             urls=extract_detail_urls(html)
-            for u in urls:
-                if u not in all_urls:
-                    all_urls.append(u)
-            print("    ["+county+"] page "+str(page_num)+" has "+str(len(urls))+" notices, total: "+str(len(all_urls)))
+            new_urls=[u for u in urls if u not in seen_urls]
+            if not new_urls:
+                print("    ["+county+"] no new URLs on page "+str(page_num)+", stopping")
+                break
+            for u in new_urls:
+                seen_urls.add(u)
+            rows=page.locator("table tbody tr")
+            row_texts=[]
+            for i in range(rows.count()):
+                txt=rows.nth(i).text_content() or ""
+                if len(txt.strip())>100:
+                    row_texts.append(txt.strip())
+            for i,url in enumerate(new_urls):
+                text=row_texts[i] if i<len(row_texts) else ""
+                parsed=parse_notice_text(text)
+                parsed["source_url"]=url
+                parsed["county"]=county
+                parsed["scraped_date"]=datetime.now().strftime("%Y-%m-%d")
+                all_records.append(parsed)
+            print("    ["+county+"] page "+str(page_num)+" +"+str(len(new_urls))+" notices, total: "+str(len(all_records)))
             next_btn=page.locator("input[name*='btnNext']")
             if next_btn.count()==0:
                 break
@@ -92,22 +110,8 @@ def scrape_county(page,county,idx):
                 break
     except Exception as e:
         print("    ["+county+"] ERROR: "+str(e))
-    print("    ["+county+"] "+str(len(all_urls))+" total notices")
-    results=[]
-    for url in all_urls:
-        try:
-            page.goto(url,wait_until="domcontentloaded",timeout=20000)
-            page.wait_for_load_state("networkidle",timeout=10000)
-            text=page.locator("body").text_content() or ""
-            parsed=parse_notice_text(text)
-            parsed["source_url"]=url
-            parsed["county"]=county
-            parsed["scraped_date"]=datetime.now().strftime("%Y-%m-%d")
-            results.append(parsed)
-            time.sleep(0.4)
-        except Exception as e:
-            print("    Detail error: "+str(e))
-    return results
+    print("    ["+county+"] "+str(len(all_records))+" total")
+    return all_records
 def is_recent(date_str,days=7):
     if not date_str:
         return True
