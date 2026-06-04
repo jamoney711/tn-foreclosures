@@ -48,55 +48,52 @@ def parse_notice_text(text):
     if m:
         data["parcel_id"]=m.group(1).strip()
     return data
-def get_detail_urls(page):
+def extract_detail_urls(html):
+    matches=re.findall(r"location\.href='(Details\.aspx\?SID=[^']+)'",html)
     urls=[]
-    html=page.content()
-    matches=re.findall(r"location\.href='(Details\.aspx\?[^']+)'",html)
     for m in matches:
-        urls.append(BASE_URL+"/"+m)
-    if not urls:
-        found=page.locator("a[href*='Details.aspx']")
-        for i in range(found.count()):
-            href=found.nth(i).get_attribute("href") or ""
-            if href:
-                full=href if href.startswith("http") else BASE_URL+"/"+href.lstrip("/")
-                urls.append(full)
-    return list(dict.fromkeys(urls))
+        url=BASE_URL+"/"+m.replace("&amp;","&")
+        if url not in urls:
+            urls.append(url)
+    return urls
 def scrape_county(page,county,idx):
     cb_name="ctl00$ContentPlaceHolder1$as1$lstCounty$"+str(idx)
     btn_name="ctl00$ContentPlaceHolder1$as1$btnGo"
-    detail_urls=[]
+    all_urls=[]
     try:
         page.goto(BASE_URL+"/Search.aspx",wait_until="domcontentloaded",timeout=30000)
         page.wait_for_load_state("networkidle",timeout=15000)
         page.evaluate("__doPostBack('"+cb_name+"','')")
         page.wait_for_load_state("networkidle",timeout=20000)
         time.sleep(1)
-        page.evaluate("document.querySelector('[name=\""+btn_name+"\"]').click()")
+        btn=page.locator("input[name='"+btn_name+"']")
+        if btn.count()>0:
+            btn.first.evaluate("el=>el.click()")
+        else:
+            page.evaluate("__doPostBack('ctl00$ContentPlaceHolder1$as1$btnGo','')")
         page.wait_for_load_state("networkidle",timeout=20000)
-        time.sleep(1.5)
-        detail_urls=get_detail_urls(page)
-        print("    ["+county+"] "+str(len(detail_urls))+" notices found")
-        page_num=2
+        time.sleep(2)
         while True:
-            next_btn=page.locator("a:has-text('Next')")
-            if next_btn.count()==0:
+            html=page.content()
+            urls=extract_detail_urls(html)
+            for u in urls:
+                if u not in all_urls:
+                    all_urls.append(u)
+            print("    ["+county+"] page has "+str(len(urls))+" notices, total so far: "+str(len(all_urls)))
+            next_links=page.locator("a[href*='Page$Next'], a:has-text('>')")
+            if next_links.count()==0:
                 break
-            next_btn.first.click()
+            next_links.first.click()
             page.wait_for_load_state("networkidle",timeout=15000)
-            time.sleep(1)
-            new_urls=get_detail_urls(page)
-            if not new_urls:
-                break
-            detail_urls.extend(new_urls)
-            detail_urls=list(dict.fromkeys(detail_urls))
-            page_num+=1
-            if page_num>20:
+            time.sleep(1.5)
+            new_html=page.content()
+            if new_html==html:
                 break
     except Exception as e:
         print("    ["+county+"] ERROR: "+str(e))
+    print("    ["+county+"] "+str(len(all_urls))+" total notices")
     results=[]
-    for url in detail_urls:
+    for url in all_urls:
         try:
             page.goto(url,wait_until="domcontentloaded",timeout=20000)
             page.wait_for_load_state("networkidle",timeout=10000)
@@ -106,7 +103,7 @@ def scrape_county(page,county,idx):
             parsed["county"]=county
             parsed["scraped_date"]=datetime.now().strftime("%Y-%m-%d")
             results.append(parsed)
-            time.sleep(0.5)
+            time.sleep(0.4)
         except Exception as e:
             print("    Detail error: "+str(e))
     return results
