@@ -189,7 +189,20 @@ jobs:
               print(f"Saved {json_path.name} - latest.json: {len(merged)} records")
               return json_path,csv_path
           ENDOFFILE
-
+      - name: Patch county click to use JS
+        run: |
+          python3 -c "
+          txt = open('scraper/scrape.py').read()
+          txt = txt.replace(
+            'lbl.first.click()',
+            'lbl.first.evaluate(\"el => el.click()\")'
+          ).replace(
+            'cb.click()',
+            'cb.evaluate(\"el => el.click()\")'
+          )
+          open('scraper/scrape.py','w').write(txt)
+          print('Patched')
+          "
       - name: Run scraper pipeline
         run: python scraper/run_pipeline.py
         env:
