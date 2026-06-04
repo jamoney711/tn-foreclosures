@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-04T05:51:14.537332",
-  "total_records": 46,
+  "generated_at": "2026-06-04T06:10:34.315762",
+  "total_records": 48,
   "county_summary": {
     "Shelby": {
-      "count": 45,
+      "count": 46,
       "cities": [
         "Evensville",
         "Gallatin",
@@ -20,15 +20,21 @@
       "cities": [
         "Unknown"
       ]
+    },
+    "Davidson": {
+      "count": 1,
+      "cities": [
+        "Unknown"
+      ]
     }
   },
   "city_summary": {
     "Unknown": {
-      "count": 33,
+      "count": 34,
       "county": "Shelby"
     },
     "Lexington": {
-      "count": 1,
+      "count": 2,
       "county": "Shelby"
     },
     "Evensville": {
@@ -57,7 +63,7 @@
     }
   },
   "auction_calendar": {
-    "June 04, 2026": 2,
+    "June 04, 2026": 3,
     "June 03, 2026": 7,
     "June 30, 2026": 1,
     "June 13, 2026": 1,
@@ -79,7 +85,7 @@
     "MODERATE_EQUITY": 0,
     "LOW_EQUITY": 0,
     "UNDERWATER": 0,
-    "no_data": 46
+    "no_data": 48
   },
   "records": [
     {
@@ -1087,6 +1093,50 @@
       "parcel_id": "",
       "source_url": "https://foreclosurestn.com/Details.aspx?SID=lmj15qy1as0zonkeqnal5pv4&ID=534518",
       "county": "Shelby",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": null,
+      "equity_flag": "insufficient_data"
+    },
+    {
+      "owner": "Eric Purtteman And Brittanypurtteman Conveying Certain Real Property Therein Described",
+      "trustee": "will offer for sale",
+      "beneficiary": "Simmons Bank as the same appears of record in the H",
+      "original_loan_amount": "457500",
+      "property_address": "2026\n                    \n                    \n                        \n                        \n\t\t\t\n                            Current SearchNotices for the past",
+      "property_city": "Lexington",
+      "property_state": "TN",
+      "property_zip": "38351",
+      "auction_date": "June 04, 2026",
+      "auction_time": "",
+      "auction_location": "front door of the of the Johnson County Courthouse, Mountain City, Tennessee , conducted by the Co-Substitute Trustees as identified and set forth herein below, pursuant to Deed of Trust  ... click 'v",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/(S(my2gtpv1uyc2zhvcys20vxkw))/Search.aspx",
+      "county": "Shelby",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": "not_found",
+      "equity_flag": "no_value_data"
+    },
+    {
+      "owner": "",
+      "trustee": "",
+      "beneficiary": "",
+      "original_loan_amount": "",
+      "property_address": "2025 Tennessee Press Service \n    \n\nPowered by Translate\n\n    funct",
+      "property_city": "",
+      "property_state": "TN",
+      "property_zip": "",
+      "auction_date": "",
+      "auction_time": "",
+      "auction_location": "",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/(S(vkt2gz3xevoitnshps30yv5y))/Details.aspx?SID=vkt2gz3xevoitnshps30yv5y&ID=535025",
+      "county": "Davidson",
       "scraped_date": "2026-06-04",
       "estimated_value": null,
       "equity_estimate": null,
