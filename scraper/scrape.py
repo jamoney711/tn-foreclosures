@@ -30,13 +30,15 @@ def parse_notice_text(text):
     for pat in [
         r"Property Address[:\s]+([^\n]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Circle|Cir|Way|Blvd|Boulevard|Pike|Hwy|Highway)[^\n]*)",
         r"(?:property located at|situated at|known as|being known as)[:\s]+(\d+[^\n,]+?(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Circle|Cir|Way|Blvd|Boulevard|Pike|Hwy|Highway)[^\n,]*)",
-        r"(\d{3,5}\s+[A-Z][A-Za-z0-9\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Circle|Cir|Way|Blvd|Boulevard|Pike|Highway|Hwy)\.?)",
+        r"((?:Believed to be[:\s]+)?(\d{3,5}\s+[A-Z][A-Za-z0-9\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Court|Ct|Circle|Cir|Way|Blvd|Boulevard|Pike|Highway|Hwy))\.?)",
     ]:
         m=re.search(pat,text,re.IGNORECASE)
         if m:
             addr=m.group(1).strip()
             addr=re.sub(r'\s+Tax Parcel.*','',addr,flags=re.IGNORECASE).strip()
-            data["property_address"]=addr
+            addr=re.sub(r'\s+',' ',addr).strip()
+            if re.match(r'^\d{3,5}\s+[A-Za-z]',addr):
+                data["property_address"]=addr
             break
     for pat in [
         r"([A-Z][a-zA-Z\s]+),\s*(?:Tennessee|TN)[,\s]+(\d{5})",
@@ -113,7 +115,6 @@ def scrape_county(page,county,idx):
     all_records=[]
 
     try:
-        # Load search page and set up filters
         page.goto(BASE_URL+"/Search.aspx",wait_until="domcontentloaded",timeout=30000)
         page.wait_for_load_state("networkidle",timeout=15000)
         set_date_filter(page)
@@ -130,7 +131,6 @@ def scrape_county(page,county,idx):
         page.wait_for_load_state("networkidle",timeout=20000)
         time.sleep(2)
 
-        # Confirm date range
         try:
             d1=page.locator("#ctl00_ContentPlaceHolder1_as1_lblDateFrom").text_content()
             d2=page.locator("#ctl00_ContentPlaceHolder1_as1_lblDateTo").text_content()
@@ -138,7 +138,6 @@ def scrape_county(page,county,idx):
         except:
             pass
 
-        # Paginate and click each VIEW button in-session
         page_num=1
         while True:
             view_buttons=page.locator("input.viewButton")
@@ -151,24 +150,23 @@ def scrape_county(page,county,idx):
 
             for i in range(count):
                 try:
-                    # Re-query buttons each time since DOM changes after navigation
                     btns=page.locator("input.viewButton")
                     if i>=btns.count():
                         break
                     btns.nth(i).evaluate("el=>el.click()")
                     page.wait_for_load_state("networkidle",timeout=15000)
-                    time.sleep(1)
+                    time.sleep(2)
 
                     body_text=page.locator("body").text_content() or ""
                     if "reCAPTCHA" in body_text or "not a robot" in body_text.lower():
                         print("    CAPTCHA - going back and retrying...")
                         page.go_back(wait_until="networkidle",timeout=15000)
-                        time.sleep(3)
+                        time.sleep(4)
                         btns=page.locator("input.viewButton")
                         if i<btns.count():
                             btns.nth(i).evaluate("el=>el.click()")
                             page.wait_for_load_state("networkidle",timeout=15000)
-                            time.sleep(2)
+                            time.sleep(3)
                             body_text=page.locator("body").text_content() or ""
 
                     if "reCAPTCHA" not in body_text and "not a robot" not in body_text.lower():
@@ -180,7 +178,7 @@ def scrape_county(page,county,idx):
                         all_records.append(parsed)
 
                     page.go_back(wait_until="networkidle",timeout=15000)
-                    time.sleep(1)
+                    time.sleep(2)
 
                 except Exception as e:
                     print("    Notice error: "+str(e))
@@ -190,7 +188,7 @@ def scrape_county(page,county,idx):
                     except:
                         pass
 
-            print("    ["+county+"] page "+str(page_num)+" done, total so far: "+str(len(all_records)))
+            print("    ["+county+"] page "+str(page_num)+" done, total: "+str(len(all_records)))
 
             next_btn=page.locator("input[name*='btnNext']")
             if next_btn.count()==0:
@@ -243,6 +241,9 @@ def scrape_all_notices(days_back=7):
         try:
             page.goto(BASE_URL+"/",wait_until="domcontentloaded",timeout=30000)
             time.sleep(2)
+            page.goto(BASE_URL+"/Search.aspx",wait_until="domcontentloaded",timeout=30000)
+            page.wait_for_load_state("networkidle",timeout=15000)
+            time.sleep(3)
             print("Session ready\n")
         except Exception as e:
             print("Warmup: "+str(e))
