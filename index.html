@@ -837,7 +837,8 @@ function renderDetail(r) {
   ).join('');
 
   const countyUrl = `https://www.assessment.state.tn.us/assessment/results.aspx?county=${encodeURIComponent(r.county)}&address=${encodeURIComponent(r.property_address||'')}`;
-  const zillowUrl = `https://www.zillow.com/homes/${encodeURIComponent((r.property_address||'')+', '+(r.property_city||'')+', TN')}_rb/`;
+  const zillowAddr = [r.property_address, r.property_city, 'TN', r.property_zip].filter(Boolean).join(', ');
+  const zillowUrl = `https://www.zillow.com/homes/${encodeURIComponent(zillowAddr)}_rb/`;
   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent([r.property_address,r.property_city,'TN',r.property_zip].filter(Boolean).join(', '))}`;
 
   return `<div class="detail-panel">
