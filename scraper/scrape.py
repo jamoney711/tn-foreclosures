@@ -2,8 +2,7 @@ import json,csv,time,re
 from datetime import datetime,timedelta
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-COUNTY_INDEX={"Anderson":0,"Bedford":1,"Benton":2,"Bledsoe":3,"Blount":4,"Bradley":5,"Campbell":6,"Cannon":7,"Carroll":8,"Carter":9,"Cheatham":10,"Chester":11,"Claiborne":12,"Clay":13,"Cocke":14,"Coffee":15,"Crockett":16,"Cumberland":17,"Davidson":18,"Decatur":19,"DeKalb":20,"Dickson":21,"Dyer":22,"Fayette":23,"Fentress":24,"Franklin":25,"Gibson":26,"Giles":27,"Grainger":28,"Greene":29,"Grundy":30,"Hamblen":31,"Hamilton":32,"Hancock":33,"Hardeman":34,"Hardin":35,"Hawkins":36,"Haywood":37,"Henderson":38,"Henry":39,"Hickman":40,"Houston":41,"Humphreys":42,"Jackson":43,"Jefferson":44,"Johnson":45,"Knox":46,"Lake":47,"Lauderdale":48,"Lawrence":49,"Lewis":50,"Lincoln":51,"Loudon":52,"Macon":53,"Madison":54,"Marion":55,"Marshall":56,"Maury":57,"McMinn":58,"McNairy":59,"Meigs":60,"Monroe":61,"Montgomery":62,"Moore":63,"Morgan":64,"Obion":65,"Overton":66,"Perry":67,"Pickett":68,"Polk":69,"Putnam":70,"Rhea":71,"Roane":72,"Robertson":73,"Rutherford":74,"Scott":75,"Sequatchie":76,"Sevier":77,"Shelby":78,"Smith":79,"Stewart":80,"Sullivan":81,"Sumner":82,"Tipton":83,"Trousdale":84,"Unicoi":85,"Union":86,"Van Buren":87,"Warren":88,"Washington":89,"Wayne":90,"Weakley":91,"White":92,"Williamson":93,"Wilson":94}
-TN_COUNTIES=list(COUNTY_INDEX.keys())
+TARGET_COUNTIES={"Shelby":78,"Davidson":18,"Knox":46,"Hamilton":32,"Rutherford":74,"Montgomery":62,"Williamson":93,"Sullivan":81}
 OUTPUT_DIR=Path(__file__).parent.parent/"data"
 OUTPUT_DIR.mkdir(exist_ok=True)
 BASE_URL="https://foreclosurestn.com"
@@ -49,51 +48,67 @@ def parse_notice_text(text):
     if m:
         data["parcel_id"]=m.group(1).strip()
     return data
-def scrape_county(page,county):
-    idx=COUNTY_INDEX[county]
+def get_detail_urls(page):
+    urls=[]
+    html=page.content()
+    matches=re.findall(r"location\.href='(Details\.aspx\?[^']+)'",html)
+    for m in matches:
+        urls.append(BASE_URL+"/"+m)
+    if not urls:
+        found=page.locator("a[href*='Details.aspx']")
+        for i in range(found.count()):
+            href=found.nth(i).get_attribute("href") or ""
+            if href:
+                full=href if href.startswith("http") else BASE_URL+"/"+href.lstrip("/")
+                urls.append(full)
+    return list(dict.fromkeys(urls))
+def scrape_county(page,county,idx):
     cb_name="ctl00$ContentPlaceHolder1$as1$lstCounty$"+str(idx)
-    links=[]
+    btn_name="ctl00$ContentPlaceHolder1$as1$btnGo"
+    detail_urls=[]
     try:
         page.goto(BASE_URL+"/Search.aspx",wait_until="domcontentloaded",timeout=30000)
         page.wait_for_load_state("networkidle",timeout=15000)
         page.evaluate("__doPostBack('"+cb_name+"','')")
         page.wait_for_load_state("networkidle",timeout=20000)
+        time.sleep(1)
+        page.evaluate("document.querySelector('[name=\""+btn_name+"\"]').click()")
+        page.wait_for_load_state("networkidle",timeout=20000)
         time.sleep(1.5)
-        for sel in ["a[href*='NoticeDetail']","a[href*='Detail.aspx']","a[href*='notice']","table a[href]"]:
-            found=page.locator(sel)
-            if found.count()>0:
-                for i in range(found.count()):
-                    href=found.nth(i).get_attribute("href") or ""
-                    if href:
-                        full=href if href.startswith("http") else BASE_URL+"/"+href.lstrip("/")
-                        links.append(full)
+        detail_urls=get_detail_urls(page)
+        print("    ["+county+"] "+str(len(detail_urls))+" notices found")
+        page_num=2
+        while True:
+            next_btn=page.locator("a:has-text('Next')")
+            if next_btn.count()==0:
                 break
-        if not links:
-            rows=page.locator("table tbody tr")
-            for i in range(rows.count()):
-                txt=rows.nth(i).text_content() or ""
-                if len(txt.strip())>80:
-                    links.append({"inline":txt.strip()})
-        print("    ["+county+"] "+str(len(links))+" notices")
+            next_btn.first.click()
+            page.wait_for_load_state("networkidle",timeout=15000)
+            time.sleep(1)
+            new_urls=get_detail_urls(page)
+            if not new_urls:
+                break
+            detail_urls.extend(new_urls)
+            detail_urls=list(dict.fromkeys(detail_urls))
+            page_num+=1
+            if page_num>20:
+                break
     except Exception as e:
         print("    ["+county+"] ERROR: "+str(e))
     results=[]
-    for item in links:
+    for url in detail_urls:
         try:
-            if isinstance(item,str):
-                page.goto(item,wait_until="domcontentloaded",timeout=20000)
-                text=page.locator("body").text_content() or ""
-                parsed=parse_notice_text(text)
-                parsed["source_url"]=item
-            else:
-                parsed=parse_notice_text(item.get("inline",""))
-                parsed["source_url"]=""
+            page.goto(url,wait_until="domcontentloaded",timeout=20000)
+            page.wait_for_load_state("networkidle",timeout=10000)
+            text=page.locator("body").text_content() or ""
+            parsed=parse_notice_text(text)
+            parsed["source_url"]=url
             parsed["county"]=county
             parsed["scraped_date"]=datetime.now().strftime("%Y-%m-%d")
             results.append(parsed)
             time.sleep(0.5)
         except Exception as e:
-            print("    Notice error: "+str(e))
+            print("    Detail error: "+str(e))
     return results
 def is_recent(date_str,days=7):
     if not date_str:
@@ -104,7 +119,7 @@ def is_recent(date_str,days=7):
     except:
         return True
 def scrape_all_notices(days_back=7):
-    print("Scrape started")
+    print("Scrape started - "+datetime.now().strftime("%Y-%m-%d %H:%M"))
     all_results=[]
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True,args=["--no-sandbox","--disable-dev-shm-usage"])
@@ -117,16 +132,16 @@ def scrape_all_notices(days_back=7):
             print("Session ready")
         except Exception as e:
             print("Warmup: "+str(e))
-        for i,county in enumerate(TN_COUNTIES):
-            print("["+str(i+1)+"/95] "+county+"...")
+        for i,(county,idx) in enumerate(TARGET_COUNTIES.items()):
+            print("["+str(i+1)+"/8] "+county+"...")
             try:
-                records=scrape_county(page,county)
+                records=scrape_county(page,county,idx)
                 records=[r for r in records if is_recent(r.get("auction_date",""),days_back)]
                 all_results.extend(records)
                 print("    -> "+str(len(records))+" kept")
             except Exception as e:
                 print("    FAIL: "+str(e))
-            time.sleep(1)
+            time.sleep(2)
         browser.close()
     print("Total: "+str(len(all_results)))
     return all_results
