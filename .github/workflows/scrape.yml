@@ -2,9 +2,8 @@ name: TN Foreclosures Weekly Scrape
 
 on:
   schedule:
-    # Every Friday at 11:00 UTC = 6:00 AM CT
     - cron: '0 11 * * 5'
-  workflow_dispatch:  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,25 +18,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Cache pip packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Install Python dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Install Playwright browsers
         run: |
@@ -51,18 +39,15 @@ jobs:
         env:
           PYTHONUNBUFFERED: "1"
 
-      - name: Copy dashboard data to dashboard folder
-        run: |
-          cp data/dashboard_data.json dashboard/dashboard_data.json || true
-          ls -la data/
-          ls -la dashboard/
+      - name: Copy dashboard data
+        run: cp data/dashboard_data.json dashboard/dashboard_data.json || true
 
       - name: Commit and push data
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add data/ dashboard/
-          git diff --staged --quiet || git commit -m "Weekly scrape $(date +'%Y-%m-%d') — $(python3 -c 'import json; d=json.load(open(\"data/latest.json\")); print(len(d))' 2>/dev/null || echo 0) records"
+          git diff --staged --quiet || git commit -m "Weekly scrape $(date +'%Y-%m-%d')"
           git push
 
       - name: Deploy to GitHub Pages
@@ -71,4 +56,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dashboard
           publish_branch: gh-pages
-          force_orphan: false
