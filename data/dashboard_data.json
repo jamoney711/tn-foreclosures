@@ -1,10 +1,11 @@
 {
-  "generated_at": "2026-06-04T06:10:34.315762",
-  "total_records": 48,
+  "generated_at": "2026-06-04T16:43:43.016564",
+  "total_records": 51,
   "county_summary": {
     "Shelby": {
-      "count": 46,
+      "count": 47,
       "cities": [
+        "Elizabethton",
         "Evensville",
         "Gallatin",
         "Lexington",
@@ -22,6 +23,12 @@
       ]
     },
     "Davidson": {
+      "count": 2,
+      "cities": [
+        "Unknown"
+      ]
+    },
+    "Hamilton": {
       "count": 1,
       "cities": [
         "Unknown"
@@ -30,7 +37,7 @@
   },
   "city_summary": {
     "Unknown": {
-      "count": 34,
+      "count": 36,
       "county": "Shelby"
     },
     "Lexington": {
@@ -60,10 +67,14 @@
     "Shelbyville": {
       "count": 1,
       "county": "Shelby"
+    },
+    "Elizabethton": {
+      "count": 1,
+      "county": "Shelby"
     }
   },
   "auction_calendar": {
-    "June 04, 2026": 3,
+    "June 04, 2026": 4,
     "June 03, 2026": 7,
     "June 30, 2026": 1,
     "June 13, 2026": 1,
@@ -85,7 +96,7 @@
     "MODERATE_EQUITY": 0,
     "LOW_EQUITY": 0,
     "UNDERWATER": 0,
-    "no_data": 48
+    "no_data": 51
   },
   "records": [
     {
@@ -1137,6 +1148,72 @@
       "parcel_id": "",
       "source_url": "https://foreclosurestn.com/(S(vkt2gz3xevoitnshps30yv5y))/Details.aspx?SID=vkt2gz3xevoitnshps30yv5y&ID=535025",
       "county": "Davidson",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": null,
+      "equity_flag": "insufficient_data"
+    },
+    {
+      "owner": "Jess Simerly Aka Jess Stewart Simerly",
+      "trustee": "will offer for sale",
+      "beneficiary": "",
+      "original_loan_amount": "457500",
+      "property_address": "2026 Current SearchNotices for the past",
+      "property_city": "Elizabethton",
+      "property_state": "TN",
+      "property_zip": "37643",
+      "auction_date": "June 04, 2026",
+      "auction_time": "",
+      "auction_location": "Courthouse, 801 East Elk Avenue, Elizabethton, TN 37643, pursuant to the Deed of Trust executed by Jess Simerly AKA Jess Stewart Simerly,  ... click 'view' to open the full text.",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/(S(kbqryklnc3erwrnv1u2wb0tw))/Search.aspx",
+      "county": "Shelby",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": "not_found",
+      "equity_flag": "no_value_data"
+    },
+    {
+      "owner": "",
+      "trustee": "",
+      "beneficiary": "",
+      "original_loan_amount": "",
+      "property_address": "2025 Tennessee Press Service Select",
+      "property_city": "",
+      "property_state": "TN",
+      "property_zip": "",
+      "auction_date": "",
+      "auction_time": "",
+      "auction_location": "",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/(S(i0fpjqtqxkxd14n2wjyuq4b0))/Details.aspx?SID=i0fpjqtqxkxd14n2wjyuq4b0&ID=538298",
+      "county": "Davidson",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": null,
+      "equity_flag": "insufficient_data"
+    },
+    {
+      "owner": "",
+      "trustee": "",
+      "beneficiary": "",
+      "original_loan_amount": "",
+      "property_address": "2025 Tennessee Press Service funct",
+      "property_city": "",
+      "property_state": "TN",
+      "property_zip": "",
+      "auction_date": "",
+      "auction_time": "",
+      "auction_location": "",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/(S(4yizj04w3t2q3vnggtansdzb))/Details.aspx?SID=4yizj04w3t2q3vnggtansdzb&ID=538152",
+      "county": "Hamilton",
       "scraped_date": "2026-06-04",
       "estimated_value": null,
       "equity_estimate": null,
