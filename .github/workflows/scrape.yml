@@ -189,18 +189,49 @@ jobs:
               print(f"Saved {json_path.name} - latest.json: {len(merged)} records")
               return json_path,csv_path
           ENDOFFILE
-      - name: Patch county click to use JS
+      - name: Patch county selection to use select element
         run: |
           python3 -c "
           txt = open('scraper/scrape.py').read()
-          txt = txt.replace(
-            'lbl.first.click()',
-            'lbl.first.evaluate(\"el => el.click()\")'
-          ).replace(
-            'cb.click()',
-            'cb.evaluate(\"el => el.click()\")'
-          )
-          open('scraper/scrape.py','w').write(txt)
+          old = '''        county_found=False
+          cb=page.locator(f\"input[type='checkbox'][value='{county}']\")
+          if cb.count()>0:
+              if not cb.is_checked():
+                  cb.click()
+              county_found=True
+          if not county_found:
+              lbl=page.locator(f\"label:has-text('{county}')\")
+              if lbl.count()>0:
+                  lbl.first.evaluate(\"el => el.click()\")
+                  county_found=True
+          if not county_found:
+              sel=page.locator(\"select\")
+              if sel.count()>0:
+                  for val in [county,f\"{county} County\"]:
+                      try:
+                          sel.first.select_option(label=val)
+                          county_found=True
+                          break
+                      except:
+                          pass'''
+          new = '''        county_found=False
+          try:
+              page.evaluate(f\"\"\"
+                  var lb = document.getElementById('ctl00_ContentPlaceHolder1_as1_lstCounty');
+                  if(lb) {{
+                      for(var i=0;i<lb.options.length;i++) {{
+                          if(lb.options[i].text.trim()==='{county}') {{
+                              lb.options[i].selected=true;
+                              lb.dispatchEvent(new Event('change'));
+                              break;
+                          }}
+                      }}
+                  }}
+              \"\"\")
+              county_found=True
+          except Exception as e:
+              print(f'    JS county select error: {{e}}')'''
+          open('scraper/scrape.py','w').write(txt.replace(old,new))
           print('Patched')
           "
       - name: Run scraper pipeline
