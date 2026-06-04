@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-06-04T05:23:29.181432",
+  "total_records": 2,
+  "county_summary": {
+    "Shelby": {
+      "count": 1,
+      "cities": [
+        "Unknown"
+      ]
+    },
+    "Knox": {
+      "count": 1,
+      "cities": [
+        "Unknown"
+      ]
+    }
+  },
+  "city_summary": {
+    "Unknown": {
+      "count": 2,
+      "county": "Shelby"
+    }
+  },
+  "auction_calendar": {},
+  "equity_breakdown": {
+    "HIGH_EQUITY": 0,
+    "MODERATE_EQUITY": 0,
+    "LOW_EQUITY": 0,
+    "UNDERWATER": 0,
+    "no_data": 2
+  },
+  "records": [
+    {
+      "owner": "",
+      "trustee": "",
+      "beneficiary": "",
+      "original_loan_amount": "",
+      "property_address": "2025 Tennessee Press Service \n    \n\nSelect",
+      "property_city": "",
+      "property_state": "TN",
+      "property_zip": "",
+      "auction_date": "",
+      "auction_time": "",
+      "auction_location": "",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/Details.aspx?SID=2cbgsgtxamayquhaa2qobjky&amp;ID=535025",
+      "county": "Shelby",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": null,
+      "equity_flag": "insufficient_data"
+    },
+    {
+      "owner": "",
+      "trustee": "",
+      "beneficiary": "",
+      "original_loan_amount": "",
+      "property_address": "2025 Tennessee Press Service \n    \n\n\n\n    funct",
+      "property_city": "",
+      "property_state": "TN",
+      "property_zip": "",
+      "auction_date": "",
+      "auction_time": "",
+      "auction_location": "",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/Details.aspx?SID=wyfc5qvqgbopu3p1ou4t4bov&amp;ID=537993",
+      "county": "Knox",
+      "scraped_date": "2026-06-04",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": null,
+      "equity_flag": "insufficient_data"
+    }
+  ]
+}
