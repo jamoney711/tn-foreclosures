@@ -1,15 +1,16 @@
 {
-  "generated_at": "2026-06-05T02:53:13.348355",
-  "total_records": 51,
+  "generated_at": "2026-06-05T13:57:57.240220",
+  "total_records": 52,
   "county_summary": {
     "Shelby": {
-      "count": 47,
+      "count": 48,
       "cities": [
         "Elizabethton",
         "Evensville",
         "Gallatin",
         "Lexington",
         "Memphis",
+        "Morristown",
         "Murfreesboro",
         "Sevierville",
         "Shelbyville",
@@ -71,6 +72,10 @@
     "Elizabethton": {
       "count": 1,
       "county": "Shelby"
+    },
+    "Morristown": {
+      "count": 1,
+      "county": "Shelby"
     }
   },
   "auction_calendar": {
@@ -89,14 +94,15 @@
     "July 02, 2026": 1,
     "July 23, 2026": 1,
     "June 23, 2026": 1,
-    "June 3, 2026": 1
+    "June 3, 2026": 1,
+    "June 05, 2026": 1
   },
   "equity_breakdown": {
     "HIGH_EQUITY": 0,
     "MODERATE_EQUITY": 0,
     "LOW_EQUITY": 0,
     "UNDERWATER": 0,
-    "no_data": 51
+    "no_data": 52
   },
   "records": [
     {
@@ -1220,6 +1226,28 @@
       "equity_pct": null,
       "equity_source": null,
       "equity_flag": "insufficient_data"
+    },
+    {
+      "owner": "Alex E. Stillwell And Kathyrn Stillwell",
+      "trustee": "will offer for sale",
+      "beneficiary": "as nominee for Gateway Mortgage Group",
+      "original_loan_amount": "457500",
+      "property_address": "2026 Current SearchNotices for the past",
+      "property_city": "Morristown",
+      "property_state": "TN",
+      "property_zip": "37815",
+      "auction_date": "June 05, 2026",
+      "auction_time": "",
+      "auction_location": "North Door Hamblen County Courthouse, 511 West 2nd North Street, Morristown, TN 37815, pursuant to the Deed of Trust executed by Darien T  ... click 'view' to open the full text.",
+      "parcel_id": "",
+      "source_url": "https://foreclosurestn.com/(S(jl1zwc0uow2fmnay2z15bmvx))/Search.aspx",
+      "county": "Shelby",
+      "scraped_date": "2026-06-05",
+      "estimated_value": null,
+      "equity_estimate": null,
+      "equity_pct": null,
+      "equity_source": "not_found",
+      "equity_flag": "no_value_data"
     }
   ]
 }

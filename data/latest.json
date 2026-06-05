@@ -1120,5 +1120,27 @@
     "equity_pct": null,
     "equity_source": null,
     "equity_flag": "insufficient_data"
+  },
+  {
+    "owner": "Alex E. Stillwell And Kathyrn Stillwell",
+    "trustee": "will offer for sale",
+    "beneficiary": "as nominee for Gateway Mortgage Group",
+    "original_loan_amount": "457500",
+    "property_address": "2026 Current SearchNotices for the past",
+    "property_city": "Morristown",
+    "property_state": "TN",
+    "property_zip": "37815",
+    "auction_date": "June 05, 2026",
+    "auction_time": "",
+    "auction_location": "North Door Hamblen County Courthouse, 511 West 2nd North Street, Morristown, TN 37815, pursuant to the Deed of Trust executed by Darien T  ... click 'view' to open the full text.",
+    "parcel_id": "",
+    "source_url": "https://foreclosurestn.com/(S(jl1zwc0uow2fmnay2z15bmvx))/Search.aspx",
+    "county": "Shelby",
+    "scraped_date": "2026-06-05",
+    "estimated_value": null,
+    "equity_estimate": null,
+    "equity_pct": null,
+    "equity_source": "not_found",
+    "equity_flag": "no_value_data"
   }
 ]
