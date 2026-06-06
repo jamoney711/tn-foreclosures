@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TN Foreclosures — Diamond Home Buyers Intel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: rgba(255,255,255,0.07);
+    --accent: #f5c842;
+    --accent2: #ff6b35;
+    --green: #3de68a;
+    --red: #ff4b4b;
+    --orange: #ff9d42;
+    --blue: #4b8fff;
+    --muted: rgba(255,255,255,0.4);
+    --text: rgba(255,255,255,0.9);
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-diamond {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    flex-shrink: 0;
+  }
+  .header-title { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -0.3px; }
+  .header-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .header-meta { display: flex; align-items: center; gap: 20px; }
+  .last-updated { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .last-updated span { color: var(--accent); }
+  .refresh-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: var(--font-mono); font-size: 11px;
+    padding: 6px 14px; cursor: pointer; letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 65px); }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+    position: sticky;
+    top: 65px;
+    height: calc(100vh - 65px);
+  }
+  .sidebar-section { padding: 0 16px 16px; margin-bottom: 4px; }
+  .sidebar-label {
+    font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 2px; }
+  .filter-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; cursor: pointer; border-radius: 6px;
+    transition: background 0.15s; user-select: none;
+  }
+  .filter-item:hover { background: var(--surface2); }
+  .filter-item.active { background: rgba(245, 200, 66, 0.1); }
+  .filter-item-label { font-size: 13px; color: var(--text); }
+  .filter-item.active .filter-item-label { color: var(--accent); }
+  .filter-count {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--surface2); color: var(--muted);
+    padding: 2px 7px; border-radius: 20px; min-width: 28px; text-align: center;
+  }
+  .filter-item.active .filter-count { background: rgba(245,200,66,0.15); color: var(--accent); }
+
+  .search-box {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-body); font-size: 13px;
+    padding: 9px 12px; outline: none; border-radius: 6px;
+    transition: border-color 0.2s;
+  }
+  .search-box::placeholder { color: var(--muted); }
+  .search-box:focus { border-color: rgba(245,200,66,0.4); }
+
+  .date-inputs { display: flex; flex-direction: column; gap: 6px; }
+  .date-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .date-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-mono); font-size: 12px;
+    padding: 8px 10px; outline: none; border-radius: 6px;
+    transition: border-color 0.2s;
+  }
+  .date-input:focus { border-color: rgba(245,200,66,0.4); }
+
+  .equity-filters { display: flex; flex-direction: column; gap: 2px; }
+  .equity-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; cursor: pointer; border-radius: 6px;
+    transition: background 0.15s; user-select: none; border: none;
+    background: transparent; text-align: left; width: 100%;
+  }
+  .equity-btn:hover { background: var(--surface2); }
+  .equity-btn.active { background: var(--surface2); }
+  .equity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .equity-btn-label { font-size: 13px; color: var(--text); flex: 1; }
+  .equity-btn.active .equity-btn-label { font-weight: 600; }
+
+  .clear-btn {
+    width: 100%; padding: 9px 12px; background: transparent;
+    border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--font-mono); font-size: 11px; cursor: pointer;
+    letter-spacing: 0.5px; transition: all 0.2s; border-radius: 6px;
+  }
+  .clear-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 4px 16px 16px; }
+
+  /* Main content */
+  .main { padding: 24px 28px; overflow-y: auto; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 16px 18px; border-radius: 8px;
+  }
+  .stat-value {
+    font-family: var(--font-display); font-size: 28px; font-weight: 800;
+    line-height: 1; margin-bottom: 4px;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.3px; }
+  .stat-card.accent { border-color: rgba(245,200,66,0.25); }
+  .stat-card.accent .stat-value { color: var(--accent); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-card.orange .stat-value { color: var(--orange); }
+
+  /* Table controls */
+  .table-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .results-count { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .results-count strong { color: var(--text); }
+  .sort-controls { display: flex; gap: 6px; }
+  .sort-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); font-family: var(--font-mono); font-size: 11px;
+    padding: 5px 12px; cursor: pointer; border-radius: 4px;
+    transition: all 0.15s; letter-spacing: 0.3px;
+  }
+  .sort-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+  .sort-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,200,66,0.07); }
+
+  /* Table */
+  .table-wrapper {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--surface2); border-bottom: 1px solid var(--border); }
+  th {
+    font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 10px 14px; text-align: left; font-weight: 500;
+    cursor: pointer; user-select: none; white-space: nowrap;
+    transition: color 0.15s;
+  }
+  th:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+  th.sorted .sort-arrow { opacity: 1; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s; cursor: pointer;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody tr.expanded { background: rgba(245,200,66,0.04); }
+
+  td { padding: 12px 14px; vertical-align: middle; }
+
+  .owner-name { font-weight: 600; font-size: 13px; color: var(--text); }
+  .address-main { font-size: 13px; color: var(--text); }
+  .address-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .county-tag {
+    display: inline-block; padding: 2px 8px;
+    background: var(--surface2); border-radius: 3px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+  }
+  .auction-date { font-family: var(--font-mono); font-size: 12px; }
+  .auction-date .time { font-size: 10px; color: var(--muted); display: block; margin-top: 1px; }
+  .days-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-family: var(--font-mono); font-size: 11px; margin-top: 3px;
+  }
+  .days-badge.urgent { background: rgba(255,75,75,0.15); color: var(--red); }
+  .days-badge.soon { background: rgba(255,157,66,0.15); color: var(--orange); }
+  .days-badge.upcoming { background: rgba(75,143,255,0.1); color: var(--blue); }
+
+  .loan-amt { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+  .equity-cell { white-space: nowrap; }
+  .equity-value { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+  .equity-pct { font-size: 11px; color: var(--muted); margin-top: 1px; font-family: var(--font-mono); }
+  .equity-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px; border-radius: 4px; font-size: 11px;
+    font-family: var(--font-mono); font-weight: 500; white-space: nowrap;
+  }
+  .equity-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .eq-high { background: rgba(61,230,138,0.12); color: var(--green); }
+  .eq-moderate { background: rgba(245,200,66,0.12); color: var(--accent); }
+  .eq-low { background: rgba(255,157,66,0.12); color: var(--orange); }
+  .eq-under { background: rgba(255,75,75,0.12); color: var(--red); }
+  .eq-none { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+  /* Expanded row detail */
+  .detail-row { display: none; }
+  .detail-row.open { display: table-row; }
+  .detail-panel {
+    background: rgba(245,200,66,0.03); border-top: 1px solid rgba(245,200,66,0.1);
+    padding: 20px 24px;
+  }
+  .detail-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px 24px; margin-bottom: 16px;
+  }
+  .detail-field {}
+  .detail-field-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 4px; }
+  .detail-field-value { font-size: 13px; color: var(--text); }
+  .detail-field-value.mono { font-family: var(--font-mono); font-size: 12px; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .action-link {
+    padding: 7px 16px; border-radius: 4px; font-size: 12px;
+    font-family: var(--font-mono); text-decoration: none; transition: all 0.15s;
+    border: 1px solid var(--border); color: var(--muted);
+    background: transparent; cursor: pointer; display: inline-block;
+  }
+  .action-link:hover { border-color: var(--accent); color: var(--accent); }
+  .action-link.primary { border-color: var(--accent); color: var(--accent); background: rgba(245,200,66,0.07); }
+  .action-link.primary:hover { background: rgba(245,200,66,0.15); }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 24px; text-align: center; color: var(--muted);
+    font-family: var(--font-mono); font-size: 13px;
+  }
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+
+  /* Auction calendar */
+  .calendar-bar {
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .cal-item {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 10px 14px; border-radius: 6px; cursor: pointer;
+    transition: all 0.15s; min-width: 90px; text-align: center;
+  }
+  .cal-item:hover { border-color: rgba(245,200,66,0.3); }
+  .cal-item.active { border-color: var(--accent); background: rgba(245,200,66,0.07); }
+  .cal-item.active .cal-date { color: var(--accent); }
+  .cal-date { font-family: var(--font-display); font-weight: 700; font-size: 13px; line-height: 1.2; }
+  .cal-count { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(10,12,16,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(4px);
+    transition: opacity 0.3s;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loader { text-align: center; }
+  .loader-diamond {
+    width: 40px; height: 40px; background: var(--accent);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    margin: 0 auto 16px;
+    animation: spin 1.5s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-text { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+  /* Export button */
+  .export-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: var(--font-mono); font-size: 11px;
+    padding: 5px 12px; cursor: pointer; border-radius: 4px;
+    transition: all 0.15s; letter-spacing: 0.3px;
+  }
+  .export-btn:hover { border-color: var(--green); color: var(--green); }
+
+  .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .view-btn {
+    background: transparent; border: none; padding: 5px 10px;
+    cursor: pointer; color: var(--muted); font-size: 14px; transition: all 0.15s;
+  }
+  .view-btn.active { background: var(--surface2); color: var(--text); }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 240px 1fr; }
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .detail-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader">
+    <div class="loader-diamond"></div>
+    <div class="loader-text">LOADING FORECLOSURE DATA...</div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo-diamond"></div>
+    <div>
+      <div class="header-title">TN FORECLOSURES</div>
+      <div class="header-sub">Diamond Home Buyers LLC — Intelligence Dashboard</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="last-updated" id="lastUpdated">Updated: <span>—</span></div>
+    <button class="export-btn" onclick="exportCSV()">↓ EXPORT CSV</button>
+    <button class="refresh-btn" onclick="loadData()">↺ REFRESH</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Search</div>
+      <input type="text" class="search-box" id="searchBox" placeholder="Owner, address, city..." oninput="applyFilters()">
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">County</div>
+      <div class="filter-group" id="countyFilters"></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">City</div>
+      <div class="filter-group" id="cityFilters"></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Auction Date</div>
+      <div class="date-inputs">
+        <div>
+          <div class="date-label">From</div>
+          <input type="date" class="date-input" id="dateFrom" onchange="applyFilters()">
+        </div>
+        <div>
+          <div class="date-label">To</div>
+          <input type="date" class="date-input" id="dateTo" onchange="applyFilters()">
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Equity Flag</div>
+      <div class="equity-filters">
+        <button class="equity-btn" onclick="toggleEquityFilter('HIGH_EQUITY')" id="eq-HIGH_EQUITY">
+          <span class="equity-dot" style="background:var(--green)"></span>
+          <span class="equity-btn-label">High Equity (40%+)</span>
+          <span class="filter-count" id="eq-count-HIGH_EQUITY">0</span>
+        </button>
+        <button class="equity-btn" onclick="toggleEquityFilter('MODERATE_EQUITY')" id="eq-MODERATE_EQUITY">
+          <span class="equity-dot" style="background:var(--accent)"></span>
+          <span class="equity-btn-label">Moderate (20–40%)</span>
+          <span class="filter-count" id="eq-count-MODERATE_EQUITY">0</span>
+        </button>
+        <button class="equity-btn" onclick="toggleEquityFilter('LOW_EQUITY')" id="eq-LOW_EQUITY">
+          <span class="equity-dot" style="background:var(--orange)"></span>
+          <span class="equity-btn-label">Low Equity (&lt;20%)</span>
+          <span class="filter-count" id="eq-count-LOW_EQUITY">0</span>
+        </button>
+        <button class="equity-btn" onclick="toggleEquityFilter('UNDERWATER')" id="eq-UNDERWATER">
+          <span class="equity-dot" style="background:var(--red)"></span>
+          <span class="equity-btn-label">Underwater</span>
+          <span class="filter-count" id="eq-count-UNDERWATER">0</span>
+        </button>
+        <button class="equity-btn" onclick="toggleEquityFilter('no_data')" id="eq-no_data">
+          <span class="equity-dot" style="background:rgba(255,255,255,0.2)"></span>
+          <span class="equity-btn-label">No Data</span>
+          <span class="filter-count" id="eq-count-no_data">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <button class="clear-btn" onclick="clearAllFilters()">CLEAR ALL FILTERS</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-card accent">
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-label">Total Foreclosures</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value" id="statHighEquity">—</div>
+        <div class="stat-label">High Equity Deals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statCounties">—</div>
+        <div class="stat-label">Counties</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-value" id="statUpcoming">—</div>
+        <div class="stat-label">Auctions This Month</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-value" id="statUrgent">—</div>
+        <div class="stat-label">Auctions ≤ 14 Days</div>
+      </div>
+    </div>
+
+    <!-- Calendar bar -->
+    <div class="calendar-bar" id="calendarBar"></div>
+
+    <!-- Table controls -->
+    <div class="table-controls">
+      <div class="results-count" id="resultsCount">Loading...</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="sort-controls">
+          <button class="sort-btn active" onclick="setSort('auction_date')" id="sort-auction_date">AUCTION DATE</button>
+          <button class="sort-btn" onclick="setSort('county')" id="sort-county">COUNTY</button>
+          <button class="sort-btn" onclick="setSort('equity_pct')" id="sort-equity_pct">EQUITY %</button>
+          <button class="sort-btn" onclick="setSort('owner')" id="sort-owner">OWNER</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="setSort('owner')">Owner <span class="sort-arrow">↕</span></th>
+            <th onclick="setSort('property_address')">Property <span class="sort-arrow">↕</span></th>
+            <th onclick="setSort('county')">County <span class="sort-arrow">↕</span></th>
+            <th onclick="setSort('auction_date')">Auction Date <span class="sort-arrow">↕</span></th>
+            <th onclick="setSort('original_loan_amount')">Loan Amount <span class="sort-arrow">↕</span></th>
+            <th onclick="setSort('estimated_value')">Est. Value <span class="sort-arrow">↕</span></th>
+            <th onclick="setSort('equity_pct')">Equity <span class="sort-arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="7"><div class="empty-state"><div class="icon">◇</div>Loading data...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+let allRecords = [];
+let filteredRecords = [];
+let activeCounties = new Set();
+let activeCities = new Set();
+let activeEquity = new Set();
+let activeAuctionDate = null;
+let sortField = 'auction_date';
+let sortDir = 1;
+let expandedRows = new Set();
+
+// ============================================================
+// Data Loading
+// ============================================================
+async function loadData() {
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  try {
+    const res = await fetch('dashboard_data.json?t=' + Date.now());
+    if (!res.ok) throw new Error('Failed to load data');
+    const data = await res.json();
+    allRecords = data.records || [];
+
+    // Update header
+    const dt = new Date(data.generated_at);
+    const formatted = dt.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    document.querySelector('#lastUpdated span').textContent = formatted;
+
+    buildSidebar(data);
+    buildCalendar(data);
+    updateStats(allRecords);
+    applyFilters();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('tableBody').innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><div class="icon">⚠</div>Could not load data. Check console.</div></td></tr>`;
+  } finally {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+// ============================================================
+// Sidebar builders
+// ============================================================
+function buildSidebar(data) {
+  // Counties
+  const countyEl = document.getElementById('countyFilters');
+  countyEl.innerHTML = '';
+  const counties = Object.entries(data.county_summary || {})
+    .sort((a,b) => b[1].count - a[1].count);
+  counties.forEach(([county, info]) => {
+    const div = document.createElement('div');
+    div.className = 'filter-item';
+    div.id = `county-${county}`;
+    div.onclick = () => toggleCounty(county);
+    div.innerHTML = `<span class="filter-item-label">${county}</span><span class="filter-count">${info.count}</span>`;
+    countyEl.appendChild(div);
+  });
+
+  // Cities (top 20 by count)
+  const cityEl = document.getElementById('cityFilters');
+  cityEl.innerHTML = '';
+  const cities = Object.entries(data.city_summary || {})
+    .sort((a,b) => b[1].count - a[1].count)
+    .slice(0, 20);
+  cities.forEach(([city, info]) => {
+    const div = document.createElement('div');
+    div.className = 'filter-item';
+    div.id = `city-${city}`;
+    div.onclick = () => toggleCity(city);
+    div.innerHTML = `<span class="filter-item-label">${city}</span><span class="filter-count">${info.count}</span>`;
+    cityEl.appendChild(div);
+  });
+
+  // Equity counts
+  const equityCounts = {};
+  allRecords.forEach(r => {
+    const f = r.equity_flag || 'no_data';
+    equityCounts[f] = (equityCounts[f]||0) + 1;
+  });
+  ['HIGH_EQUITY','MODERATE_EQUITY','LOW_EQUITY','UNDERWATER','no_data'].forEach(k => {
+    const el = document.getElementById(`eq-count-${k}`);
+    if (el) el.textContent = equityCounts[k] || 0;
+  });
+}
+
+function buildCalendar(data) {
+  const bar = document.getElementById('calendarBar');
+  bar.innerHTML = '';
+  const cal = data.auction_calendar || {};
+  const sorted = Object.entries(cal).sort((a,b) => new Date(a[0]) - new Date(b[0]));
+  sorted.forEach(([date, count]) => {
+    const div = document.createElement('div');
+    div.className = 'cal-item';
+    div.id = `cal-${date}`;
+    const d = new Date(date + ', 2026');
+    const label = isNaN(d) ? date : d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    div.innerHTML = `<div class="cal-date">${label}</div><div class="cal-count">${count} notices</div>`;
+    div.onclick = () => toggleAuctionDate(date);
+    bar.appendChild(div);
+  });
+}
+
+// ============================================================
+// Filter logic
+// ============================================================
+function toggleCounty(county) {
+  const el = document.getElementById(`county-${county}`);
+  if (activeCounties.has(county)) {
+    activeCounties.delete(county);
+    el.classList.remove('active');
+  } else {
+    activeCounties.add(county);
+    el.classList.add('active');
+  }
+  applyFilters();
+}
+
+function toggleCity(city) {
+  const el = document.getElementById(`city-${city}`);
+  if (activeCities.has(city)) {
+    activeCities.delete(city);
+    el.classList.remove('active');
+  } else {
+    activeCities.add(city);
+    el.classList.add('active');
+  }
+  applyFilters();
+}
+
+function toggleEquityFilter(flag) {
+  const el = document.getElementById(`eq-${flag}`);
+  if (activeEquity.has(flag)) {
+    activeEquity.delete(flag);
+    el.classList.remove('active');
+  } else {
+    activeEquity.add(flag);
+    el.classList.add('active');
+  }
+  applyFilters();
+}
+
+function toggleAuctionDate(date) {
+  const el = document.getElementById(`cal-${date}`);
+  if (activeAuctionDate === date) {
+    activeAuctionDate = null;
+    el.classList.remove('active');
+  } else {
+    document.querySelectorAll('.cal-item').forEach(e => e.classList.remove('active'));
+    activeAuctionDate = date;
+    el.classList.add('active');
+  }
+  applyFilters();
+}
+
+function clearAllFilters() {
+  activeCounties.clear();
+  activeCities.clear();
+  activeEquity.clear();
+  activeAuctionDate = null;
+  document.querySelectorAll('.filter-item.active, .equity-btn.active, .cal-item.active')
+    .forEach(el => el.classList.remove('active'));
+  document.getElementById('searchBox').value = '';
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+
+  filteredRecords = allRecords.filter(r => {
+    if (activeCounties.size > 0 && !activeCounties.has(r.county)) return false;
+    if (activeCities.size > 0 && !activeCities.has(r.property_city)) return false;
+    if (activeEquity.size > 0) {
+      const ef = r.equity_flag || 'no_data';
+      if (!activeEquity.has(ef)) return false;
+    }
+    if (activeAuctionDate && r.auction_date !== activeAuctionDate) return false;
+    if (search) {
+      const haystack = [r.owner, r.property_address, r.property_city, r.county, r.beneficiary, r.trustee]
+        .filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    if (dateFrom || dateTo) {
+      const aDate = parseAuctionDate(r.auction_date);
+      if (aDate) {
+        if (dateFrom && aDate < new Date(dateFrom)) return false;
+        if (dateTo && aDate > new Date(dateTo + 'T23:59:59')) return false;
+      }
+    }
+    return true;
+  });
+
+  sortRecords();
+  renderTable();
+  updateStats(filteredRecords);
+  document.getElementById('resultsCount').innerHTML =
+    `<strong>${filteredRecords.length}</strong> of ${allRecords.length} records`;
+}
+
+function parseAuctionDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+
+// ============================================================
+// Sorting
+// ============================================================
+function setSort(field) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
+  const btn = document.getElementById(`sort-${field}`);
+  if (btn) btn.classList.add('active');
+
+  if (sortField === field) {
+    sortDir *= -1;
+  } else {
+    sortField = field;
+    sortDir = field === 'equity_pct' ? -1 : 1; // Default: high equity first
+  }
+  sortRecords();
+  renderTable();
+}
+
+function sortRecords() {
+  filteredRecords.sort((a, b) => {
+    let av = a[sortField], bv = b[sortField];
+    if (sortField === 'auction_date') {
+      av = parseAuctionDate(av) || new Date(0);
+      bv = parseAuctionDate(bv) || new Date(0);
+      return (av - bv) * sortDir;
+    }
+    if (typeof av === 'number' && typeof bv === 'number') {
+      // Put nulls at end
+      if (av === null || av === undefined) return 1;
+      if (bv === null || bv === undefined) return -1;
+      return (av - bv) * sortDir;
+    }
+    av = String(av||'').toLowerCase();
+    bv = String(bv||'').toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+}
+
+// ============================================================
+// Table rendering
+// ============================================================
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  if (!filteredRecords.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">◇</div>No records match current filters.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = '';
+  filteredRecords.forEach((r, i) => {
+    const daysUntil = getDaysUntilAuction(r.auction_date);
+    const rowId = `row-${i}`;
+    const tr = document.createElement('tr');
+    tr.id = rowId;
+    if (expandedRows.has(i)) tr.classList.add('expanded');
+    tr.onclick = () => toggleExpand(i, r);
+    tr.innerHTML = `
+      <td><div class="owner-name">${esc(r.owner||'Unknown')}</div></td>
+      <td>
+        <div class="address-main">${esc(r.property_address||'—')}</div>
+        <div class="address-sub">${esc(r.property_city||'')}${r.property_city && r.property_state ? ', ' : ''}${esc(r.property_state||'')} ${esc(r.property_zip||'')}</div>
+      </td>
+      <td><span class="county-tag">${esc(r.county||'—')}</span></td>
+      <td>
+        <div class="auction-date">${esc(r.auction_date||'—')}<span class="time">${esc(r.auction_time||'')}</span></div>
+        ${daysUntil !== null ? `<span class="days-badge ${daysUntil <= 7 ? 'urgent' : daysUntil <= 21 ? 'soon' : 'upcoming'}">${daysUntil === 0 ? 'TODAY' : daysUntil === 1 ? '1 day' : daysUntil + 'd'}</span>` : ''}
+      </td>
+      <td><span class="loan-amt">${r.original_loan_amount ? '$' + Number(r.original_loan_amount).toLocaleString() : '—'}</span></td>
+      <td><span class="loan-amt">${r.estimated_value ? '$' + Number(r.estimated_value).toLocaleString() : '—'}</span></td>
+      <td class="equity-cell">${renderEquityBadge(r)}</td>
+    `;
+    tbody.appendChild(tr);
+
+    // Detail row
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'detail-row' + (expandedRows.has(i) ? ' open' : '');
+    detailTr.id = `detail-${i}`;
+    detailTr.innerHTML = `<td colspan="7">${renderDetail(r)}</td>`;
+    tbody.appendChild(detailTr);
+  });
+}
+
+function renderEquityBadge(r) {
+  const flag = r.equity_flag || 'no_data';
+  const classes = { HIGH_EQUITY:'eq-high', MODERATE_EQUITY:'eq-moderate', LOW_EQUITY:'eq-low', UNDERWATER:'eq-under', no_data:'eq-none' };
+  const labels = { HIGH_EQUITY:'HIGH EQUITY', MODERATE_EQUITY:'MODERATE', LOW_EQUITY:'LOW', UNDERWATER:'UNDERWATER', no_data:'NO DATA' };
+  const dotColors = { HIGH_EQUITY:'var(--green)', MODERATE_EQUITY:'var(--accent)', LOW_EQUITY:'var(--orange)', UNDERWATER:'var(--red)', no_data:'rgba(255,255,255,0.2)' };
+  const cls = classes[flag] || 'eq-none';
+  const label = labels[flag] || flag;
+  const dot = dotColors[flag] || 'gray';
+  const pct = r.equity_pct !== null && r.equity_pct !== undefined ? ` ${r.equity_pct > 0 ? '+' : ''}${r.equity_pct}%` : '';
+  return `<span class="equity-badge ${cls}"><span class="dot" style="background:${dot}"></span>${label}${pct}</span>`;
+}
+
+function renderDetail(r) {
+  const fields = [
+    ['Trustee', r.trustee],
+    ['Beneficiary / Lender', r.beneficiary],
+    ['Auction Location', r.auction_location],
+    ['Parcel ID', r.parcel_id],
+    ['Deed Book/Page', r.deed_book && r.deed_page ? `${r.deed_book} / ${r.deed_page}` : null],
+    ['Equity Source', r.equity_source],
+    ['Original Loan', r.original_loan_amount ? '$' + Number(r.original_loan_amount).toLocaleString() : null],
+    ['Estimated Value', r.estimated_value ? '$' + Number(r.estimated_value).toLocaleString() : null],
+    ['Equity Estimate', r.equity_estimate !== null && r.equity_estimate !== undefined ? '$' + Number(r.equity_estimate).toLocaleString() : null],
+    ['Scraped Date', r.scraped_date],
+  ];
+
+  const fieldsHtml = fields.filter(([,v]) => v).map(([label, val]) =>
+    `<div class="detail-field">
+      <div class="detail-field-label">${label}</div>
+      <div class="detail-field-value mono">${esc(String(val))}</div>
+    </div>`
+  ).join('');
+
+  const countyUrl = `https://www.assessment.state.tn.us/assessment/results.aspx?county=${encodeURIComponent(r.county)}&address=${encodeURIComponent(r.property_address||'')}`;
+  const zillowUrl = `https://www.zillow.com/homes/${encodeURIComponent((r.property_address||'')+', '+(r.property_city||'')+', TN')}_rb/`;
+  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent([r.property_address,r.property_city,'TN',r.property_zip].filter(Boolean).join(', '))}`;
+
+  return `<div class="detail-panel">
+    <div class="detail-grid">${fieldsHtml}</div>
+    <div class="detail-actions">
+      <a class="action-link primary" href="${mapsUrl}" target="_blank" onclick="event.stopPropagation()">📍 Google Maps</a>
+      <a class="action-link" href="${zillowUrl}" target="_blank" onclick="event.stopPropagation()">🏠 Zillow</a>
+      <a class="action-link" href="${countyUrl}" target="_blank" onclick="event.stopPropagation()">📋 TN Assessment</a>
+      ${r.source_url ? `<a class="action-link" href="${r.source_url}" target="_blank" onclick="event.stopPropagation()">📰 Source Notice</a>` : ''}
+    </div>
+  </div>`;
+}
+
+function toggleExpand(i, r) {
+  const detailRow = document.getElementById(`detail-${i}`);
+  const mainRow = document.getElementById(`row-${i}`);
+  if (expandedRows.has(i)) {
+    expandedRows.delete(i);
+    detailRow.classList.remove('open');
+    mainRow.classList.remove('expanded');
+  } else {
+    expandedRows.add(i);
+    detailRow.classList.add('open');
+    mainRow.classList.add('expanded');
+  }
+}
+
+// ============================================================
+// Stats
+// ============================================================
+function updateStats(records) {
+  const total = records.length;
+  const highEq = records.filter(r => r.equity_flag === 'HIGH_EQUITY').length;
+  const counties = new Set(records.map(r => r.county).filter(Boolean)).size;
+  const now = new Date();
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  const thisMonth = records.filter(r => {
+    const d = parseAuctionDate(r.auction_date);
+    return d && d >= now && d <= endOfMonth;
+  }).length;
+  const urgent = records.filter(r => {
+    const d = getDaysUntilAuction(r.auction_date);
+    return d !== null && d <= 14;
+  }).length;
+
+  document.getElementById('statTotal').textContent = total.toLocaleString();
+  document.getElementById('statHighEquity').textContent = highEq;
+  document.getElementById('statCounties').textContent = counties;
+  document.getElementById('statUpcoming').textContent = thisMonth;
+  document.getElementById('statUrgent').textContent = urgent;
+}
+
+function getDaysUntilAuction(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  const diff = Math.round((d - now) / 86400000);
+  return diff >= 0 ? diff : null;
+}
+
+// ============================================================
+// Export
+// ============================================================
+function exportCSV() {
+  const fields = ['county','owner','property_address','property_city','property_state','property_zip',
+    'auction_date','auction_time','auction_location','original_loan_amount','beneficiary',
+    'trustee','parcel_id','estimated_value','equity_estimate','equity_pct','equity_flag','equity_source','scraped_date'];
+  const header = fields.join(',');
+  const rows = filteredRecords.map(r =>
+    fields.map(f => {
+      const v = r[f] ?? '';
+      return `"${String(v).replace(/"/g,'""')}"`;
+    }).join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tn-foreclosures-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ============================================================
+// Init
+// ============================================================
+loadData();
+</script>
+</body>
+</html>
